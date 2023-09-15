@@ -1,66 +1,85 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-function Content() {
-    const link = "https://open.spotify.com/embed/track/"
-    const [listSong, setListSong] = useState([
-        "https://open.spotify.com/embed/track/3YctJXK6kznnWl68TnYobN",
-        "https://open.spotify.com/embed/track/7jLSThU5Kg1RWt19Leiaxm",
-        "https://open.spotify.com/embed/track/28bxbqNcAuNxYDZYet6eZ7"
-    ]);
-    const [song, setSong] = useState();
+const Content = () => {
+    const [listStudent, setListStudent] = useState([]);
+    const [pages, setPages] = useState([]);
+    const [curPage, setCurPage] = useState(1);
+    const [totalPage, setTotalpage] = useState();
+    const [action, setAction] = useState('next');
+    const [loading, setLoading] = useState(false);
 
-    const handleAddSong = (e) => {
-        e.preventDefault();
-        setListSong([
-            ...listSong,
-            link + song
-        ])
-        setSong("")
+    useEffect(() => {
+        setLoading(true);
+        async function getStudents() {
+            let res = await fetch(`https://js-post-api.herokuapp.com/api/students?_page=${curPage}`)
+            let json = await res.json();
+            setListStudent(json.data)
+            setTotalpage(Math.ceil(Number(json.pagination._totalRows) / Number(json.pagination._limit)));
+            let arrpage = []
+            for (let i = 1; i <= totalPage; i++) {
+                arrpage.push(i)
+            }
+            setPages(arrpage)
+            setLoading(false);
+
+
+        }
+        getStudents()
+    }, [curPage])
+    const handleClickPagination = (page) => {
+        setCurPage(page);
     }
-
-    const handleDelete = (songDelete) => {
-        setListSong((prev) => prev.filter((item) => item != songDelete))
+    const handlePrev = () => {
+        if (curPage > 1) {
+            setCurPage(curPage - 1)
+            setAction('prev')
+        }
     }
-
+    const handleNext = () => {
+        if (curPage < totalPage) {
+            setCurPage(curPage + 1)
+            setAction('next')
+        }
+    }
     return (
-        <>
-            <div className="d-flex justify-content-center bg-dark text-white">
-                <div className="row col-8 ">
-                    <h1>Playlist</h1>
-                    <form onSubmit={handleAddSong}>
-                        <label className="form-label fw-bold">Spotify Track ID: </label>
-                        <div className="form-group d-flex align-items-center" style={{ height: "60px" }}>
-                            <input type="text" className="form-control me-2" value={song} onInput={(e) => setSong(e.target.value)} />
-                            <button type="submit" className="btn btn-sm btn-primary" style={{ height: "65%" }}>
-                                <i className="fa fa-plus ms-1 me-1" />
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div className="">
-            <ul className="list-group mt-3 " >
-                <div className="row ">
-                    {listSong.map((song, index) => (
-                        <div className="col-md-3 " key={index}>
-                            <li className="list-group-item border-0 d-flex">
-                                <div className="custom-audio d-flex justify-content-between">
-                                    <iframe src={song} width="300" height="380" allowtransparency="true" allow="encrypted-media"></iframe>
-                                    <span
-                                        role="button"
-                                        className="fw-bolder text-danger"
-                                        onClick={() => handleDelete(song)}
-                                    >
-                                        &times;
-                                    </span>
+        <div>
+            <nav aria-label="Page navigation example">
+                <ul className="pagination">
+                    <li className={curPage <= 1 ? "page-item disabled" : "page-item"}><a className="page-link" role="button" onClick={handlePrev}>Previous</a></li>
+                    {
+                        pages.map((page, index) => (
+                            <li className="page-item" key={index}>
+                                <a className={curPage == page ? "page-link btn btn-primary active" : "page-link btn btn-primary "} role="button" onClick={() => handleClickPagination(page)}>{page}</a>
+
+                            </li>)
+                        )
+                    }
+                    <li className={curPage >= totalPage ? "page-item disabled" : "page-item"}><a className="page-link" role="button" onClick={handleNext}>Next</a></li>
+                </ul>
+            </nav>
+
+            <div className="row">
+                {
+                    loading
+                        ? (<div class="spinner-grow position-absolute top-50 start-50" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>)
+                        : listStudent.map((student, index) => {
+
+                            return (<div className="card" style={{ width: "18rem" }} key={index}>
+                                <img src={student.gender == "female" ? "https://cdn-icons-png.flaticon.com/512/65/65581.png" : "https://cdn-icons-png.flaticon.com/512/53/53104.png"} className="card-img-top" alt="" />
+
+                                <div className="card-body">
+                                    <h5 className="card-title">{student.name} - {student.gender}</h5>
+                                    <p className="fst-italic">ID: {student.id}</p>
+                                    <p className="card-text fw-bold">Mark: {student.mark}</p>
                                 </div>
-                            </li>
-                        </div>
-                    ))}
-                </div>
-            </ul>
+                            </div>)
+                        })
+                }
             </div>
-        </>
+        </div>
     )
 }
+
 export default Content;
