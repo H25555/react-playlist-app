@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import FormRegister from "./FormRegister";
 
 const Content = () => {
     const [listStudent, setListStudent] = useState([]);
@@ -7,6 +8,7 @@ const Content = () => {
     const [totalPage, setTotalpage] = useState();
     const [action, setAction] = useState('next');
     const [loading, setLoading] = useState(false);
+    const [trigger, setTrigger] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -32,53 +34,87 @@ const Content = () => {
     const handlePrev = () => {
         if (curPage > 1) {
             setCurPage(curPage - 1)
-            setAction('prev')
+            // setAction('prev')
         }
     }
     const handleNext = () => {
         if (curPage < totalPage) {
             setCurPage(curPage + 1)
-            setAction('next')
+            // setAction('next')
         }
     }
+    const handleFirst = () => {
+        setCurPage(1)
+    }
+    const handleLast = () => {
+        setCurPage(totalPage)
+    }
     return (
-        <div>
-            <nav aria-label="Page navigation example">
-                <ul className="pagination">
-                    <li className={curPage <= 1 ? "page-item disabled" : "page-item"}><a className="page-link" role="button" onClick={handlePrev}>Previous</a></li>
+        <>
+            <div>
+                <nav aria-label="Page navigation example">
+                    <ul className="pagination">
+                        <li className={curPage <= 1 ? "page-item disabled" : "page-item"}><a className="page-link" role="button" onClick={handleFirst}>First</a></li>
+                        <li className={curPage <= 1 ? "page-item disabled" : "page-item"}><a className="page-link" role="button" onClick={handlePrev}>Previous</a></li>
+                        {
+                            pages.map((page, index) => {
+                                // <li className="page-item" key={index}>
+                                //     <a className={curPage == page ? "page-link btn btn-primary active" : "page-link btn btn-primary "} role="button" onClick={() => handleClickPagination(page)}>{page}</a>
+                                // </li>
+                                if (index == curPage-1 || index == curPage  || index == curPage + 1) {
+                                    if(curPage == totalPage || curPage == totalPage -1 || curPage == totalPage -2){
+                                        return (
+                                            <li className="page-item" key={index}>
+                                                <a className={curPage == page ? "page-link btn btn-primary active" : "page-link btn btn-primary "} role="button" onClick={() => handleClickPagination(page)}>{page}</a>
+                                            </li>
+                                        )
+                                    } else {
+                                        return (
+                                        <li className="page-item" key={index}>
+                                            <a className={curPage == page ? "page-link btn btn-primary active" : "page-link btn btn-primary "} role="button" onClick={() => handleClickPagination(page)}>{page}</a>
+                                        </li>
+                                    )
+                                    }
+                                    
+                                } else {
+                                    return (
+                                        <li className="page-item" key={index}>
+                                            <a className="page-link btn btn-primary " role="button">...</a>
+                                        </li>
+                                    )
+                                }
+                            }
+                            )
+                        }
+                        <li className={curPage >= totalPage ? "page-item disabled" : "page-item"}><a className="page-link" role="button" onClick={handleNext}>Next</a></li>
+                        <li className={curPage >= totalPage ? "page-item disabled" : "page-item"}><a className="page-link" role="button" onClick={handleLast}>Last</a></li>
+                    </ul>
+                </nav>
+                <button className="btn btn-primary me-5" onClick={() => setTrigger(!trigger)}>+Add Student</button>
+                <div className="row mt-5">
                     {
-                        pages.map((page, index) => (
-                            <li className="page-item" key={index}>
-                                <a className={curPage == page ? "page-link btn btn-primary active" : "page-link btn btn-primary "} role="button" onClick={() => handleClickPagination(page)}>{page}</a>
-
-                            </li>)
-                        )
-                    }
-                    <li className={curPage >= totalPage ? "page-item disabled" : "page-item"}><a className="page-link" role="button" onClick={handleNext}>Next</a></li>
-                </ul>
-            </nav>
-
-            <div className="row">
-                {
-                    loading
-                        ? (<div class="spinner-grow position-absolute top-50 start-50" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>)
-                        : listStudent.map((student, index) => {
-
-                            return (<div className="card" style={{ width: "18rem" }} key={index}>
-                                <img src={student.gender == "female" ? "https://cdn-icons-png.flaticon.com/512/65/65581.png" : "https://cdn-icons-png.flaticon.com/512/53/53104.png"} className="card-img-top" alt="" />
-
-                                <div className="card-body">
-                                    <h5 className="card-title">{student.name} - {student.gender}</h5>
-                                    <p className="fst-italic">ID: {student.id}</p>
-                                    <p className="card-text fw-bold">Mark: {student.mark}</p>
-                                </div>
+                        loading
+                            ? (<div className="spinner-grow position-absolute top-50 start-50" role="status">
+                                <span className="visually-hidden">Loading...</span>
                             </div>)
-                        })
-                }
+                            : listStudent.map((student, index) => {
+
+                                return (<div className="card" style={{ width: "18rem" }} key={index}>
+                                    <img src={student.gender == "female" ? "https://cdn-icons-png.flaticon.com/512/65/65581.png" : "https://cdn-icons-png.flaticon.com/512/53/53104.png"} className="card-img-top" alt="" />
+
+                                    <div className="card-body">
+                                        <h5 className="card-title">{student.name} - {student.age}</h5>
+                                        <h6 className="card-title">{student.gender}</h6>
+                                        <p className="fst-italic">ID: {student.id}</p>
+                                        <p className="card-text fw-bold">Mark: {student.mark}</p>
+                                    </div>
+                                </div>)
+                            })
+                    }
+                </div>
             </div>
-        </div>
+            {trigger && <FormRegister />}
+        </>
     )
 }
 
